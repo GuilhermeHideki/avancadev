@@ -1,8 +1,9 @@
-version: '3'
+version: '3.5'
 
 services:
 
   rabbit:
+    container_name: rabbit
     image: "rabbitmq:3-management"
     environment:
       RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
@@ -12,3 +13,55 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
+    volumes:
+      - rabbit:/var/lib/rabbitmq
+      - ./rabbit/definitions.json:/opt/definitions.json:ro
+      - ./rabbit/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+
+  ms-a:
+    image: guilhermehideki/avancadev-fullcycle-ms-a:aula4
+    environment:
+      RABBITMQ_CONSUMER_NAME: app-name
+      RABBITMQ_CONSUMER_QUEUE_NAME: exemplo
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+      RABBITMQ_DEFAULT_HOST: rabbit
+      RABBITMQ_DEFAULT_PORT: 5672
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_DLX: dlx
+      RABBITMQ_NOTIFICATION_EX: amq.direct
+      RABBITMQ_NOTIFICATION_ROUTING_KEY: jobs
+    ports:
+      - "9090:9090"
+    depends_on:
+      - rabbit
+    restart: always
+
+  ms-b:
+    image: guilhermehideki/avancadev-fullcycle-ms-b:aula4
+    environment:
+      MS_C_ADDRESS: http://ms-c:9090
+      RABBITMQ_CONSUMER_NAME: payment-ms
+      RABBITMQ_CONSUMER_QUEUE_NAME: orders
+      RABBITMQ_SERVER: rabbit
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+      RABBITMQ_DEFAULT_HOST: rabbit
+      RABBITMQ_DEFAULT_PORT: 5672
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_DLX: dlx
+      RABBITMQ_NOTIFICATION_EX: amq.direct
+      RABBITMQ_NOTIFICATION_ROUTING_KEY:
+    depends_on:
+      - rabbit
+    restart: on-failure
+
+  ms-c:
+    image: guilhermehideki/avancadev-fullcycle-ms-c:aula4
+    depends_on:
+      - rabbit
+    restart: on-failure
+
+volumes:
+  rabbit:
+    driver: local

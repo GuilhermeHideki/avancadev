@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/joho/godotenv"
 	"github.com/wesleywillians/go-rabbitmq/queue"
 	"html/template"
 	"log"
@@ -16,13 +15,6 @@ type Order struct {
 
 type Result struct {
 	Status string
-}
-
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env")
-	}
 }
 
 func main() {

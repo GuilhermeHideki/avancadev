@@ -38,7 +38,7 @@ func main() {
 	coupons.Coupon = append(coupons.Coupon, coupon)
 
 	http.HandleFunc("/", home)
-	http.ListenAndServe(":9092", nil)
+	http.ListenAndServe(":9090", nil)
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
